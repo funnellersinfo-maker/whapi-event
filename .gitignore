@@ -1,2 +1,55 @@
-skills/
+# Dependencias
 node_modules/
+.pnp
+.pnp.js
+
+# Builds
+.next/
+out/
+build/
+dist/
+
+# Logs
+dev.log
+server.log
+*.log
+
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Base de datos local
+db/
+*.db
+*.db-journal
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.pem
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Prisma generado
+src/generated/
+
+# Cache
+.cache/
+.turbo/
+coverage/
+
+# ── Solo del sandbox de desarrollo (no van al repo) ──
+skills/
+.zscripts/
+tests/
+examples/
+mini-services/
+download/
+.agent-ctx/
+worklog.md
+Caddyfile
+db/

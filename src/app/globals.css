@@ -1,0 +1,243 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* ── Marca WhatsApp ─────────────────────────── */
+  --color-wa: #25d366;          /* verde brillante */
+  --color-wa-deep: #075e54;     /* verde oscuro chat */
+  --color-wa-teal: #128c7e;     /* verde intermedio */
+  --color-wa-glow: #00e5a0;     /* acento luminoso */
+  --color-ink: #050b08;         /* negro profundo con tinte verde */
+  --color-ink-2: #0a1410;       /* negro de tarjetas */
+  --color-ink-3: #0f1d16;       /* negro elevado */
+  --color-amber-warn: #ffb020;  /* urgencia */
+
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-float-slow: float 11s ease-in-out infinite;
+  --animate-pulse-dot: pulse-dot 1.6s ease-in-out infinite;
+  --animate-typing: typing 1.2s ease-in-out infinite;
+  --animate-glow-breath: glow-breath 4.5s ease-in-out infinite;
+  --animate-shimmer: shimmer 3.2s linear infinite;
+  --animate-flow-dash: flow-dash 1.4s linear infinite;
+  --animate-marquee: marquee 26s linear infinite;
+  --animate-spin-slow: spin 14s linear infinite;
+}
+
+/* ── Tema (sitio oscuro único) ─────────────────── */
+:root {
+  --radius: 1rem;
+  --background: #050b08;
+  --foreground: #eef5f0;
+  --card: #0a1410;
+  --card-foreground: #eef5f0;
+  --popover: #0f1d16;
+  --popover-foreground: #eef5f0;
+  --primary: #25d366;
+  --primary-foreground: #04120a;
+  --secondary: #0f1d16;
+  --secondary-foreground: #d7e8dd;
+  --muted: #101b15;
+  --muted-foreground: #93a89a;
+  --accent: #25d366;
+  --accent-foreground: #04120a;
+  --destructive: #ff5d5d;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #25d366;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    /* Sitio estático en móvil: sin zoom, sin scroll horizontal */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    overscroll-behavior-y: none;
+    touch-action: pan-y;
+    min-height: 100svh;
+    font-family: var(--font-sans), system-ui, sans-serif;
+  }
+
+  ::selection {
+    background: rgba(37, 211, 102, 0.35);
+    color: #ffffff;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* ── Utilidades de marca ──────────────────────── */
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  }
+
+  .text-gradient-wa {
+    background: linear-gradient(115deg, #eafff2 0%, #25d366 45%, #00e5a0 80%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glass {
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .glass-strong {
+    background: linear-gradient(160deg, rgba(16, 32, 24, 0.85), rgba(8, 18, 13, 0.92));
+    border: 1px solid rgba(37, 211, 102, 0.16);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .glow-wa {
+    box-shadow:
+      0 0 24px rgba(37, 211, 102, 0.28),
+      0 0 64px rgba(37, 211, 102, 0.12);
+  }
+
+  .glow-wa-sm {
+    box-shadow: 0 0 14px rgba(37, 211, 102, 0.35);
+  }
+
+  .text-glow-wa {
+    text-shadow: 0 0 28px rgba(37, 211, 102, 0.55);
+  }
+
+  .card-lift {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.35s, box-shadow 0.35s;
+  }
+  .card-lift:hover {
+    transform: translateY(-4px);
+    border-color: rgba(37, 211, 102, 0.35);
+    box-shadow: 0 18px 48px -18px rgba(37, 211, 102, 0.28);
+  }
+
+  /* Scrollbar premium */
+  .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(37, 211, 102, 0.35) transparent;
+  }
+  .scroll-slim::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  .scroll-slim::-webkit-scrollbar-thumb {
+    background: rgba(37, 211, 102, 0.35);
+    border-radius: 999px;
+  }
+  .scroll-slim::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* ── Animaciones clave ─────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.55); }
+  50% { opacity: 0.75; transform: scale(0.9); box-shadow: 0 0 0 6px rgba(255, 77, 77, 0); }
+}
+
+@keyframes typing {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+@keyframes glow-breath {
+  0%, 100% { box-shadow: 0 0 20px rgba(37, 211, 102, 0.22), 0 0 60px rgba(37, 211, 102, 0.08); }
+  50% { box-shadow: 0 0 34px rgba(37, 211, 102, 0.42), 0 0 90px rgba(37, 211, 102, 0.16); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes flow-dash {
+  to { stroke-dashoffset: -28; }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── Burbujas de chat WhatsApp ─────────────────── */
+.bubble-out {
+  background: linear-gradient(150deg, #075e54 0%, #0a6b5e 100%);
+  border-radius: 14px 14px 4px 14px;
+}
+
+.bubble-in {
+  background: #16241c;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px 14px 14px 4px;
+}
+
+/* Chips tipo iOS dentro del teléfono */
+.phone-notch-shadow {
+  box-shadow:
+    0 40px 90px -30px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 90px -18px rgba(37, 211, 102, 0.25);
+}
+
+/* Reduce motion accesible */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
