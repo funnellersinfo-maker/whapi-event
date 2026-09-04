@@ -12,7 +12,6 @@ import { Hero } from "@/components/landing/Hero";
 import { IntrigueSection } from "@/components/landing/IntrigueSection";
 import { FlowSection } from "@/components/landing/FlowSection";
 import { AudienceSection, EventSection } from "@/components/landing/AudienceEventSections";
-import { ScheduleSection } from "@/components/landing/ScheduleSection";
 import { FomoSection, FinalSection } from "@/components/landing/FomoFinalSections";
 import { FaqSection } from "@/components/landing/FaqSection";
 import { Footer } from "@/components/landing/Footer";
@@ -26,12 +25,13 @@ export default function Home() {
       <TopBanner />
 
       <main className="relative flex-1">
+        {/* El agendamiento (ScheduleSection embedded) vive DENTRO del Hero:
+            primer bloque = hook + calendario de conversion + demo. */}
         <Hero />
         <IntrigueSection />
         <FlowSection />
         <AudienceSection />
         <EventSection />
-        <ScheduleSection />
         <FomoSection />
         <FaqSection />
         <FinalSection />

@@ -1,7 +1,12 @@
 "use client";
 
 /**
- * HERO — Titular potente + badge en vivo + CTA principal + demo del teléfono.
+ * HERO — PRIMER BLOQUE DE CONVERSIÓN.
+ * ─────────────────────────────────────────────────────────
+ * Hook (badge + titular + subheadline + CTA de AGENDAMIENTO)
+ * → CALENDARIO DE SESIONES embebido a continuación (mismo
+ *   bloque, visible sin scroll profundo — prioridad absoluta:
+ *   AGENDAR) → demo del teléfono como prueba visual.
  * Animación palabra por palabra con Framer Motion, glow y partículas.
  */
 
@@ -9,6 +14,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Radio } from "lucide-react";
 import { PhoneDemo } from "./PhoneDemo";
 import { ParticleField } from "./ParticleField";
+import { ScheduleSection } from "./ScheduleSection";
 import { SITE_CONFIG } from "@/config/site";
 
 const TITLE_LINES = [
@@ -35,15 +41,15 @@ export function Hero() {
         className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background"
       />
 
-      <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:pb-28 lg:pt-24">
-        {/* Columna de texto */}
-        <div className="text-center lg:text-left">
+      <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:pb-28 lg:pt-24">
+        {/* ── HOOK (centrado, foco total en agendar) ── */}
+        <div className="mx-auto max-w-3xl text-center">
           {/* Badge en vivo */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="glass mx-auto inline-flex items-center gap-2.5 rounded-full px-4 py-2 lg:mx-0"
+            className="glass mx-auto inline-flex items-center gap-2.5 rounded-full px-4 py-2"
           >
             <span className="h-2 w-2 animate-pulse-dot rounded-full bg-[#ff4d4d]" />
             <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/90 sm:text-xs">
@@ -84,7 +90,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.05, duration: 0.6 }}
-            className="mx-auto mt-6 max-w-xl text-balance text-base leading-relaxed text-white/65 sm:text-lg lg:mx-0"
+            className="mx-auto mt-6 max-w-xl text-balance text-base leading-relaxed text-white/65 sm:text-lg"
           >
             Descubre <strong className="font-semibold text-white/90">en vivo</strong> cómo
             empresas están convirtiendo WhatsApp en un sistema que{" "}
@@ -92,28 +98,44 @@ export function Hero() {
             automáticamente con IA.
           </motion.p>
 
-          {/* CTA principal */}
+          {/* CTA principal — prioridad: AGENDAR */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.25, duration: 0.6 }}
             className="mt-9"
           >
-            <HeroCta onClick={scrollToSchedule} />
+            <HeroCta onClick={scrollToSchedule} label="RESERVAR MI LUGAR GRATIS" />
             <p className="mt-4 text-xs uppercase tracking-[0.18em] text-white/40">
               Cupos limitados · Acceso gratuito
             </p>
           </motion.div>
         </div>
 
-        {/* Teléfono demo */}
+        {/* ── AGENDAMIENTO — embebido en el PRIMER BLOQUE ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.45, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-12 sm:mt-14"
+        >
+          <ScheduleSection embedded />
+        </motion.div>
+
+        {/* ── PRUEBA VISUAL — demo del teléfono ── */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="relative"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mt-16 sm:mt-20"
         >
-          <PhoneDemo />
+          <p className="text-center text-[11px] font-bold uppercase tracking-[0.3em] text-white/40">
+            Esto es lo que verás funcionando en vivo
+          </p>
+          <div className="mt-6 flex justify-center">
+            <PhoneDemo />
+          </div>
         </motion.div>
       </div>
     </header>
@@ -122,7 +144,7 @@ export function Hero() {
 
 export function HeroCta({
   onClick,
-  label = "QUIERO VER CÓMO FUNCIONA",
+  label = "RESERVAR MI LUGAR GRATIS",
   id,
 }: {
   onClick: () => void;
@@ -134,7 +156,7 @@ export function HeroCta({
       id={id}
       type="button"
       onClick={onClick}
-      aria-label={`${label} — Reservar mi lugar gratis en el evento en vivo`}
+      aria-label={`${label} — Agenda tu sesión del evento en vivo gratis`}
       className="group relative inline-flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-wa px-8 py-4 text-base font-bold uppercase tracking-wide text-[#04120a] transition-all duration-300 animate-glow-breath hover:scale-[1.02] hover:bg-[#2ee276] active:scale-[0.98] sm:w-auto sm:min-w-[300px]"
     >
       {/* brillo al pasar el cursor */}

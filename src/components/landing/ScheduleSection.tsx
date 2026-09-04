@@ -73,7 +73,13 @@ function formatCountdown(ms: number): string {
   return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
 }
 
-export function ScheduleSection() {
+export function ScheduleSection({
+  embedded = false,
+}: {
+  /** Modo embebido: se integra dentro del primer bloque (hero) con
+   *  espaciado compacto y sin fondo radial duplicado. */
+  embedded?: boolean;
+}) {
   const [mounted, setMounted] = useState(false);
   const [board, setBoard] = useState<DayBoard | null>(null);
   const [view, setView] = useState<View>("slots");
@@ -216,8 +222,8 @@ export function ScheduleSection() {
 
   if (!mounted || !board) {
     return (
-      <section id="reservar" className="relative py-16">
-        <ScheduleSkeleton />
+      <section id="reservar" className={embedded ? "relative" : "relative py-16"}>
+        <ScheduleSkeleton compact={embedded} />
       </section>
     );
   }
@@ -225,11 +231,21 @@ export function ScheduleSection() {
   const scarce = board.availableToday > 0 && board.availableToday <= 3;
 
   return (
-    <section id="reservar" className="relative overflow-hidden py-20 sm:py-24">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(37,211,102,0.1),transparent)]"
-      />
+    <section
+      id="reservar"
+      aria-label="Agenda tu sesión de hoy"
+      className={
+        embedded
+          ? "relative overflow-hidden"
+          : "relative overflow-hidden py-20 sm:py-24"
+      }
+    >
+      {!embedded && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(37,211,102,0.1),transparent)]"
+        />
+      )}
 
       <div className="relative mx-auto max-w-4xl px-4 sm:px-6">
         {/* Encabezado dinámico */}
@@ -273,7 +289,7 @@ export function ScheduleSection() {
         </div>
 
         {/* Contador regresivo real */}
-        <CountdownCard countdown={countdown} tomorrowLabel={tomorrow.label} />
+        <CountdownCard countdown={countdown} tomorrowLabel={tomorrow.label} compact={embedded} />
 
         {/* Recordatorio de reserva incompleta */}
         <AnimatePresence>
@@ -304,7 +320,7 @@ export function ScheduleSection() {
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.35 }}
             >
-              <SlotGrid board={board} onSelect={selectSlot} />
+              <SlotGrid board={board} onSelect={selectSlot} compact={embedded} />
 
               {/* Modo mañana: hoy agotado */}
               {isTomorrowMode && (
@@ -551,9 +567,11 @@ function readBookingsToday(board: DayBoard): RegistrationData | null {
 function CountdownCard({
   countdown,
   tomorrowLabel,
+  compact = false,
 }: {
   countdown: { ms: number; label: string } | null;
   tomorrowLabel: string;
+  compact?: boolean;
 }) {
   if (!countdown) return null;
   const isTomorrow = countdown.label.includes("mañana");
@@ -561,7 +579,9 @@ function CountdownCard({
     <motion.div
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass mx-auto mt-8 flex w-fit max-w-full flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-2xl px-6 py-4"
+      className={`glass mx-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-2xl px-6 py-4 ${
+        compact ? "mt-5" : "mt-8"
+      }`}
     >
       <span className="text-xs uppercase tracking-[0.18em] text-white/50">
         {countdown.label}
@@ -584,12 +604,16 @@ function CountdownCard({
 function SlotGrid({
   board,
   onSelect,
+  compact = false,
 }: {
   board: DayBoard;
   onSelect: (slot: SlotState) => void;
+  compact?: boolean;
 }) {
   return (
-    <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+    <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 ${
+      compact ? "mt-5" : "mt-8"
+    }`}>
       {board.slots.map((slot, i) => (
         <SlotCard key={slot.slot} slot={slot} index={i} onSelect={onSelect} />
       ))}
@@ -719,10 +743,12 @@ function FormInput({
   );
 }
 
-function ScheduleSkeleton() {
+function ScheduleSkeleton({ compact = false }: { compact?: boolean }) {
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6">
-      <div className="mx-auto h-8 w-64 animate-pulse rounded-full bg-white/5" />
+      {!compact && (
+        <div className="mx-auto h-8 w-64 animate-pulse rounded-full bg-white/5" />
+      )}
       <div className="mx-auto mt-4 h-10 w-80 animate-pulse rounded-full bg-white/5" />
       <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {Array.from({ length: 7 }).map((_, i) => (
