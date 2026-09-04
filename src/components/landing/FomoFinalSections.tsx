@@ -9,9 +9,10 @@ import { motion } from "framer-motion";
 import { ArrowRight, ShieldAlert, TrendingUp } from "lucide-react";
 import { HeroCta } from "./Hero";
 import { ParticleField } from "./ParticleField";
+import { goToSchedule } from "@/lib/navigation";
 
 function scrollToSchedule() {
-  document.getElementById("reservar")?.scrollIntoView({ behavior: "smooth" });
+  goToSchedule();
 }
 
 export function FomoSection() {

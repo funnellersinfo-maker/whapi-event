@@ -16,6 +16,7 @@ import { PhoneDemo } from "./PhoneDemo";
 import { ParticleField } from "./ParticleField";
 import { ScheduleSection } from "./ScheduleSection";
 import { SITE_CONFIG } from "@/config/site";
+import { goToSchedule } from "@/lib/navigation";
 
 const TITLE_LINES = [
   { words: ["¿Y", "SI", "TU", "WHATSAPP"], highlight: null },
@@ -24,9 +25,9 @@ const TITLE_LINES = [
 ];
 
 export function Hero() {
-  const scrollToSchedule = () => {
-    document.getElementById("reservar")?.scrollIntoView({ behavior: "smooth" });
-  };
+  // En móvil el deck coordina el salto dentro del mismo bloque (scroll interno);
+  // en escritorio degrada a scrollIntoView nativo.
+  const scrollToSchedule = () => goToSchedule();
 
   return (
     <header className="relative overflow-hidden">

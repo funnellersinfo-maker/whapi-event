@@ -241,3 +241,28 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ── MODO BLOQUES (móvil) ─────────────────────────
+   El documento queda clavado: el ÚNICO movimiento posible es el
+   scroll vertical interno de cada bloque (overscroll-contain).
+   Sin scroll de página, sin rebote de iOS, sin horizontal. */
+html.deck-mode,
+html.deck-mode body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Los scrollers internos del deck heredan el scrollbar premium
+   y no muestran flechas de teclado fuera del bloque activo */
+html.deck-mode [data-block-scroller] {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(37, 211, 102, 0.35) transparent;
+}
+
+/* Punto de anclaje suave para saltos internos (#reservar, #registro) */
+html.deck-mode #reservar,
+html.deck-mode #registro {
+  scroll-margin-top: 8px;
+}

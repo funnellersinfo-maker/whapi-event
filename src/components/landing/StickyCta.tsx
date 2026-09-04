@@ -1,11 +1,13 @@
 "use client";
 
 /**
- * CTA STICKY MÓVIL — barra fija inferior que aparece al pasar el hero.
- * Respeta el safe-area de iOS. Cambia de estado según el registro:
- *  - Sin registrar: "RESERVAR MI LUGAR GRATIS" → scroll a horarios.
+ * CTA STICKY MÓVIL — barra fija inferior que SIEMPRE queda por encima
+ * del deck de bloques. Respeta el safe-area de iOS. Cambia de estado:
+ *  - Sin registrar: "RESERVAR MI LUGAR GRATIS" → va al calendario
+ *    (en modo bloques: cambia de bloque y desplaza su contenido).
  *  - Registrado: abre WhatsApp directamente (re-activación).
- * Desaparece cuando la sección de reservas ya está en pantalla.
+ * Visible en modo deck cuando el calendario NO está a la vista
+ * (bloques posteriores o contenido scrolleado) — el botón nunca se pierde.
  */
 
 import { useEffect, useState } from "react";
@@ -13,6 +15,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp, MessageCircle, Zap } from "lucide-react";
 import { buildWhatsAppLink, type RegistrationData } from "@/lib/whatsapp";
 import { track, EVENTS } from "@/lib/tracking";
+import { goToSchedule } from "@/lib/navigation";
 
 function readTodayRegistration(): RegistrationData | null {
   try {
@@ -31,20 +34,34 @@ function readTodayRegistration(): RegistrationData | null {
 }
 
 export function StickyCta() {
-  const [visible, setVisible] = useState(false);
   const [scheduleInView, setScheduleInView] = useState(false);
-  // Inicializador lazy: solo se renderiza cuando visible=true (scroll),
+  const [pageScrolled, setPageScrolled] = useState(false); // escritorio
+  const [deckIndex, setDeckIndex] = useState<number | null>(null); // modo bloques
+  // Inicializador lazy: solo se renderiza cuando visible (scroll/deck),
   // por lo que no hay desajuste de hidratación.
   const [registration, setRegistration] = useState<RegistrationData | null>(() =>
     typeof window === "undefined" ? null : readTodayRegistration()
   );
 
   useEffect(() => {
-    const onScroll = () => {
-      setVisible(window.scrollY > 520);
-    };
+    // Escritorio: aparición al hacer scroll de página
+    const onScroll = () => setPageScrolled(window.scrollY > 520);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Modo bloques: aparición por índice de bloque (body.dataset.blockIndex)
+    const onDeckChange = (e: Event) =>
+      setDeckIndex((e as CustomEvent<{ index: number }>).detail?.index ?? 0);
+    const syncDeckFromDom = () => {
+      const idx = document.body.dataset.blockIndex;
+      if (idx !== undefined) {
+        onDeckChange(
+          new CustomEvent("wa:deck-change", { detail: { index: Number(idx || 0) } })
+        );
+      }
+    };
+    syncDeckFromDom();
+    window.addEventListener("wa:deck-change", onDeckChange);
 
     const observer = new IntersectionObserver(
       ([entry]) => setScheduleInView(entry.isIntersecting),
@@ -55,9 +72,17 @@ export function StickyCta() {
 
     return () => {
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("wa:deck-change", onDeckChange);
       observer.disconnect();
     };
   }, []);
+
+  const deckActive = deckIndex !== null;
+  // En modo deck: visible en bloques posteriores o si el calendario quedó
+  // fuera de la vista dentro del bloque actual (botón siempre a mano).
+  const visible = deckActive
+    ? (deckIndex ?? 0) > 0 || !scheduleInView
+    : pageScrolled;
 
   const show = visible && !scheduleInView && !registration;
 
@@ -83,9 +108,7 @@ export function StickyCta() {
               type="button"
               onClick={() => {
                 track("ScheduleOpen", { content_name: "sticky_cta" });
-                document
-                  .getElementById("reservar")
-                  ?.scrollIntoView({ behavior: "smooth" });
+                goToSchedule();
               }}
               className="group relative flex h-12 flex-1 items-center justify-center gap-2 overflow-hidden rounded-xl bg-wa text-sm font-bold uppercase tracking-wide text-[#04120a] transition-transform active:scale-[0.98]"
               aria-label="Reservar mi lugar gratis ahora"
