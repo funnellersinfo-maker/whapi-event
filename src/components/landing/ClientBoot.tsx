@@ -2,20 +2,18 @@
 
 /**
  * BOOT CLIENTE — se monta una sola vez en el layout de la página.
- * 1) Inicializa Meta Pixel si hay pixelId configurado.
+ * 1) Respaldo idempotente del Meta Pixel (el código oficial con
+ *    init + PageView ya corre desde el HTML en layout.tsx).
  * 2) Bloquea pinch-zoom y double-tap zoom en iOS/Android para que
  *    el sitio se sienta como una app nativa (100% estático en móvil).
  */
 
 import { useEffect } from "react";
-import { ensurePixel, track, EVENTS } from "@/lib/tracking";
+import { ensurePixel } from "@/lib/tracking";
 
 export function ClientBoot() {
   useEffect(() => {
     ensurePixel();
-    track(EVENTS.VIEW_CONTENT, {
-      content_name: "landing_evento_whatsapp_ia",
-    });
 
     // ── Bloqueo de gestos de zoom (iOS) ──
     const preventGesture = (e: Event) => e.preventDefault();

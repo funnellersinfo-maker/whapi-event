@@ -1,10 +1,13 @@
 "use client";
 
 /**
- * TRACKING — Meta Pixel / CAPI listo para activar
- * ───────────────────────────────────────────────
- * Pega tu pixelId en src/config/site.ts → todos los eventos
- * empiezan a dispararse automáticamente. Sin pixelId → no-op.
+ * TRACKING — Meta Pixel ACTIVO (pixelId en src/config/site.ts).
+ * El código oficial (init + PageView) vive en el layout y corre al
+ * parsear el HTML. Este módulo garantiza que fbq exista (idempotente)
+ * y expone el disparo de eventos de los botones.
+ *
+ * POLÍTICA DE EVENTOS: los CTA de la landing disparan únicamente
+ * "Lead" (clientes potenciales). Ni ViewContent ni otros eventos.
  */
 
 import { SITE_CONFIG } from "@/config/site";
@@ -22,7 +25,9 @@ declare global {
   }
 }
 
-/** Carga asíncrona del pixel (una sola vez) — stub moderno, sin arguments/apply */
+/** Carga del pixel (idempotente) — el snippet oficial ya corre en el
+ * layout desde el parseo del HTML; esto es un respaldo que garantiza
+ * el stub/cola si aún no existe (nunca produce doble init). */
 export function ensurePixel(): void {
   if (typeof window === "undefined") return;
   const pixelId = SITE_CONFIG.tracking.pixelId;
@@ -76,10 +81,15 @@ export function track(event: string, data?: Record<string, unknown>): void {
   }
 }
 
-/** Eventos usados por la landing (documentación de flujo) */
+/** Dispara "Lead" (cliente potencial) — el único evento de botones */
+export function trackLead(
+  contentName: string,
+  data?: Record<string, unknown>
+): void {
+  track("Lead", { content_name: contentName, ...data });
+}
+
+/** Evento único usado por los CTA de la landing */
 export const EVENTS = {
-  VIEW_CONTENT: "ViewContent", // llegó a la landing
-  SCHEDULE_SELECT: "ScheduleSelect", // eligió horario (custom)
-  INITIATE_CHECKOUT: "InitiateCheckout", // completó el registro
-  LEAD: "Lead", // activó su experiencia en WhatsApp
+  LEAD: "Lead", // cliente potencial — único evento de botones
 } as const;

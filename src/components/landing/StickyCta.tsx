@@ -2,20 +2,31 @@
 
 /**
  * CTA STICKY MÓVIL — barra fija inferior que SIEMPRE queda por encima
- * del deck de bloques. Respeta el safe-area de iOS. Cambia de estado:
- *  - Sin registrar: "RESERVAR MI LUGAR GRATIS" → va al calendario
- *    (en modo bloques: cambia de bloque y desplaza su contenido).
+ * del deck de bloques. Respeta el safe-area de iOS.
+ *
+ * APARICIÓN INTELIGENTE (regla de scroll):
+ *  - NO aparece al cargar la página.
+ *  - Aparece con el PRIMER SCROLL (contenido del bloque actual se
+ *    desplaza, o el usuario cambia de bloque).
+ *  - Desaparece al volver al punto más arriba (inicial): bloque 1
+ *    con su contenido arriba del todo, o scrollY ≈ 0 en escritorio.
+ *
+ * Estados del botón:
+ *  - Sin registrar: "RESERVAR MI LUGAR GRATIS" → va al calendario.
  *  - Registrado: abre WhatsApp directamente (re-activación).
- * Visible en modo deck cuando el calendario NO está a la vista
- * (bloques posteriores o contenido scrolleado) — el botón nunca se pierde.
+ * Ambos clics disparan Lead (cliente potencial) en el Meta Pixel.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp, MessageCircle, Zap } from "lucide-react";
 import { buildWhatsAppLink, type RegistrationData } from "@/lib/whatsapp";
-import { track, EVENTS } from "@/lib/tracking";
+import { trackLead } from "@/lib/tracking";
 import { goToSchedule } from "@/lib/navigation";
+
+/** Umbral con histéresis: aparece al superarlo, se oculta al bajar de HIDE */
+const SHOW_AT = 28;
+const HIDE_AT = 10;
 
 function readTodayRegistration(): RegistrationData | null {
   try {
@@ -34,67 +45,101 @@ function readTodayRegistration(): RegistrationData | null {
 }
 
 export function StickyCta() {
-  const [scheduleInView, setScheduleInView] = useState(false);
-  const [pageScrolled, setPageScrolled] = useState(false); // escritorio
-  const [deckIndex, setDeckIndex] = useState<number | null>(null); // modo bloques
+  // ¿El usuario ya hizo scroll (primer gesto)? — false al cargar.
+  const [scrolled, setScrolled] = useState(false);
+  // Índice de bloque actual (modo bloques móvil); null = escritorio.
+  const [deckIndex, setDeckIndex] = useState<number | null>(null);
   // Inicializador lazy: solo se renderiza cuando visible (scroll/deck),
   // por lo que no hay desajuste de hidratación.
   const [registration, setRegistration] = useState<RegistrationData | null>(() =>
     typeof window === "undefined" ? null : readTodayRegistration()
   );
 
-  useEffect(() => {
-    // Escritorio: aparición al hacer scroll de página
-    const onScroll = () => setPageScrolled(window.scrollY > 520);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
+  // Refs espejo para leer estado fresco dentro de listeners pasivos.
+  const scrolledRef = useRef(false);
+  const deckIndexRef = useRef<number | null>(null);
 
-    // Modo bloques: aparición por índice de bloque (body.dataset.blockIndex)
-    const onDeckChange = (e: Event) =>
-      setDeckIndex((e as CustomEvent<{ index: number }>).detail?.index ?? 0);
+  const setScrolledState = (next: boolean) => {
+    if (next === scrolledRef.current) return;
+    scrolledRef.current = next;
+    setScrolled(next);
+  };
+
+  /** Aplica la histéresis sobre la posición vertical dada */
+  const applyTop = (top: number) => {
+    setScrolledState(
+      scrolledRef.current ? top > HIDE_AT : top > SHOW_AT
+    );
+  };
+
+  /** Reevalúa: ¿está el usuario "abajo" (scrolled) o de vuelta arriba? */
+  const evaluate = () => {
+    if (deckIndexRef.current !== null) {
+      // MODO BLOQUES: cualquier bloque posterior cuenta como scroll;
+      // en el bloque 1 manda la posición de su contenido interno.
+      if (deckIndexRef.current > 0) {
+        setScrolledState(true);
+        return;
+      }
+      const sc = document.querySelector<HTMLElement>(
+        "div[data-block-active] div[data-block-scroller]"
+      );
+      applyTop(sc ? sc.scrollTop : 0);
+    } else {
+      // ESCRITORIO (fallback): scroll de página.
+      applyTop(window.scrollY);
+    }
+  };
+
+  useEffect(() => {
+    // Cambio de bloque: actualizar índice y reevaluar tras el repintado
+    // (el atributo data-block-active se actualiza en el render de React).
+    const onDeckChange = (e: Event) => {
+      const idx = (e as CustomEvent<{ index: number }>).detail?.index ?? 0;
+      deckIndexRef.current = idx;
+      setDeckIndex(idx);
+      requestAnimationFrame(() => requestAnimationFrame(evaluate));
+    };
     const syncDeckFromDom = () => {
       const idx = document.body.dataset.blockIndex;
       if (idx !== undefined) {
-        onDeckChange(
-          new CustomEvent("wa:deck-change", { detail: { index: Number(idx || 0) } })
-        );
+        deckIndexRef.current = Number(idx || 0);
+        setDeckIndex(deckIndexRef.current);
+      } else {
+        deckIndexRef.current = null;
+        setDeckIndex(null);
       }
     };
     syncDeckFromDom();
+    // Estado inicial diferido al próximo frame (arriba → oculta) y sin
+    // setState síncrono dentro del efecto.
+    requestAnimationFrame(evaluate);
+
+    // Scroll en FASE DE CAPTURA: captura el scroll del scroller del
+    // bloque activo (los eventos de scroll no burbujean) y el de página.
+    const onScrollCapture = () => evaluate();
+    document.addEventListener("scroll", onScrollCapture, { passive: true, capture: true });
+
     window.addEventListener("wa:deck-change", onDeckChange);
 
-    const observer = new IntersectionObserver(
-      ([entry]) => setScheduleInView(entry.isIntersecting),
-      { threshold: 0.15 }
-    );
-    const target = document.getElementById("reservar");
-    if (target) observer.observe(target);
-
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("scroll", onScrollCapture, true);
       window.removeEventListener("wa:deck-change", onDeckChange);
-      observer.disconnect();
     };
   }, []);
 
-  const deckActive = deckIndex !== null;
-  // En modo deck: visible en bloques posteriores o si el calendario quedó
-  // fuera de la vista dentro del bloque actual (botón siempre a mano).
-  const visible = deckActive
-    ? (deckIndex ?? 0) > 0 || !scheduleInView
-    : pageScrolled;
-
-  const show = visible && !scheduleInView && !registration;
-
   const openWhatsApp = () => {
     if (!registration) return;
-    track(EVENTS.LEAD, { content_name: "sticky_reactivacion" });
+    trackLead("sticky_reactivacion");
     window.open(buildWhatsAppLink(registration), "_blank", "noopener,noreferrer");
   };
 
+  const showReservar = scrolled && !registration;
+  const showWhatsApp = scrolled && !!registration;
+
   return (
     <AnimatePresence>
-      {show && (
+      {showReservar && (
         <motion.div
           initial={{ y: 90 }}
           animate={{ y: 0 }}
@@ -107,7 +152,7 @@ export function StickyCta() {
             <button
               type="button"
               onClick={() => {
-                track("ScheduleOpen", { content_name: "sticky_cta" });
+                trackLead("sticky_reservar");
                 goToSchedule();
               }}
               className="group relative flex h-12 flex-1 items-center justify-center gap-2 overflow-hidden rounded-xl bg-wa text-sm font-bold uppercase tracking-wide text-[#04120a] transition-transform active:scale-[0.98]"
@@ -121,7 +166,7 @@ export function StickyCta() {
         </motion.div>
       )}
 
-      {registration && visible && !scheduleInView && (
+      {showWhatsApp && (
         <motion.div
           initial={{ y: 90 }}
           animate={{ y: 0 }}

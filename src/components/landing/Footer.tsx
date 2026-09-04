@@ -8,6 +8,7 @@
 import { MessageCircle } from "lucide-react";
 import { SITE_CONFIG } from "@/config/site";
 import { buildDirectLink } from "@/lib/whatsapp";
+import { trackLead } from "@/lib/tracking";
 
 export function Footer() {
   return (
@@ -28,6 +29,7 @@ export function Footer() {
               href={buildDirectLink("footer")}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackLead("whatsapp_footer")}
               className="inline-flex items-center gap-2 rounded-xl border border-wa/25 bg-wa/10 px-4 py-2.5 text-sm font-semibold text-wa transition-colors hover:bg-wa/20"
             >
               <MessageCircle className="h-4 w-4" aria-hidden="true" />

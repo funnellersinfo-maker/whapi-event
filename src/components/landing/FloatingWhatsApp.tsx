@@ -4,12 +4,14 @@
  * WHATSAPP FLOTANTE (desktop) — fijo en la esquina inferior derecha,
  * no tapa contenido. En móvil se oculta: la acción primaria ya vive
  * en el CTA sticky inferior. Mensaje pre-armado vía wa.me.
+ * Dispara Lead (cliente potencial) al hacer clic.
  */
 
 import { motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
 import { SITE_CONFIG } from "@/config/site";
 import { buildDirectLink } from "@/lib/whatsapp";
+import { trackLead } from "@/lib/tracking";
 
 export function FloatingWhatsApp() {
   return (
@@ -17,6 +19,7 @@ export function FloatingWhatsApp() {
       href={buildDirectLink("boton_flotante")}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => trackLead("whatsapp_flotante")}
       aria-label={`Abrir WhatsApp y hablar con ${SITE_CONFIG.whatsapp.display}`}
       initial={{ opacity: 0, scale: 0.6 }}
       animate={{ opacity: 1, scale: 1 }}

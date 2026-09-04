@@ -90,6 +90,22 @@ const jsonLd = {
   url: SITE_CONFIG.seo.siteUrl,
 };
 
+/**
+ * META PIXEL CODE — oficial, inyectado al inicio del <body> (se ejecuta
+ * durante el parseo del HTML, antes de la hidratación): init + PageView.
+ * Los botones de la landing disparan "Lead" vía src/lib/tracking.ts.
+ */
+const META_PIXEL_SNIPPET = `!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '${SITE_CONFIG.tracking.pixelId}');
+fbq('track', 'PageView');`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -100,6 +116,23 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} antialiased bg-background text-foreground`}
       >
+        {/* Meta Pixel Code */}
+        {SITE_CONFIG.tracking.pixelId ? (
+          <>
+            <script dangerouslySetInnerHTML={{ __html: META_PIXEL_SNIPPET }} />
+            <noscript>
+              <img
+                height="1"
+                width="1"
+                style={{ display: "none" }}
+                src={`https://www.facebook.com/tr?id=${SITE_CONFIG.tracking.pixelId}&ev=PageView&noscript=1`}
+                alt=""
+              />
+            </noscript>
+          </>
+        ) : null}
+        {/* End Meta Pixel Code */}
+
         {children}
         <Toaster />
         <script

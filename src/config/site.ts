@@ -34,13 +34,14 @@ export const SITE_CONFIG = {
   },
 
   /**
-   * TRACKING — Meta Pixel / CAPI
-   * Pega aquí tu Pixel ID y los eventos se disparan automáticamente.
-   * Deja vacío ("") para desactivar todo el tracking sin tocar código.
-   * Eventos enviados: PageView, ViewContent, ScheduleSelect, InitiateCheckout, Lead
+   * TRACKING — Meta Pixel
+   * Pixel oficial cargado en el layout (init + PageView).
+   * LOS BOTONES DE LA LANDING DISPARAN "Lead" (clientes potenciales),
+   * sin ViewContent ni ningún otro evento.
+   * Eventos enviados: PageView (carga) + Lead (cada CTA)
    */
   tracking: {
-    pixelId: "", // ← ej: "1234567890123456"
+    pixelId: "1539107407505521", // ← Pixel activo
     apiToken: "", // ← opcional: token CAPI para eventos de servidor (futuro)
     testEventCode: "", // ← opcional: código de prueba de Meta
   },

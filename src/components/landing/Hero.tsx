@@ -17,6 +17,7 @@ import { ParticleField } from "./ParticleField";
 import { ScheduleSection } from "./ScheduleSection";
 import { SITE_CONFIG } from "@/config/site";
 import { goToSchedule } from "@/lib/navigation";
+import { trackLead } from "@/lib/tracking";
 
 const TITLE_LINES = [
   { words: ["¿Y", "SI", "TU", "WHATSAPP"], highlight: null },
@@ -129,14 +130,18 @@ export function Hero() {
             automáticamente con IA.
           </motion.p>
 
-          {/* CTA principal — prioridad: AGENDAR */}
+          {/* CTA principal — prioridad: AGENDAR (dispara Lead) */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.25, duration: 0.6 }}
             className="mt-9"
           >
-            <HeroCta onClick={scrollToSchedule} label="RESERVAR MI LUGAR GRATIS" />
+            <HeroCta
+              onClick={scrollToSchedule}
+              label="RESERVAR MI LUGAR GRATIS"
+              trackAs="cta_reservar_hero"
+            />
             <p className="mt-4 text-xs uppercase tracking-[0.18em] text-white/40">
               Cupos limitados · Acceso gratuito
             </p>
@@ -177,16 +182,22 @@ export function HeroCta({
   onClick,
   label = "RESERVAR MI LUGAR GRATIS",
   id,
+  trackAs = "cta_principal",
 }: {
   onClick: () => void;
   label?: string;
   id?: string;
+  /** Nombre del evento Lead que dispara al hacer clic */
+  trackAs?: string;
 }) {
   return (
     <button
       id={id}
       type="button"
-      onClick={onClick}
+      onClick={() => {
+        trackLead(trackAs);
+        onClick();
+      }}
       aria-label={`${label} — Agenda tu sesión del evento en vivo gratis`}
       className="group relative inline-flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-wa px-8 py-4 text-base font-bold uppercase tracking-wide text-[#04120a] transition-all duration-300 animate-glow-breath hover:scale-[1.02] hover:bg-[#2ee276] active:scale-[0.98] sm:w-auto sm:min-w-[300px]"
     >

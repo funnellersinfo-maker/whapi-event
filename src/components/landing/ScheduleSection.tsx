@@ -39,7 +39,7 @@ import {
   type SlotState,
 } from "@/lib/schedule";
 import { buildWhatsAppLink, type RegistrationData } from "@/lib/whatsapp";
-import { track, EVENTS } from "@/lib/tracking";
+import { trackLead } from "@/lib/tracking";
 
 type View = "slots" | "form" | "success";
 
@@ -157,7 +157,7 @@ export function ScheduleSection({
     setSelected({ slot: slot.slot, day: "hoy" });
     setView("form");
     saveSelectedSlot(slot.slot);
-    track(EVENTS.SCHEDULE_SELECT, { content_name: "sesion_hoy", value: slot.slot });
+    trackLead("seleccion_sesion_hoy", { value: slot.slot });
     requestAnimationFrame(() => {
       document.getElementById("registro")?.scrollIntoView({ behavior: "smooth", block: "center" });
     });
@@ -166,8 +166,7 @@ export function ScheduleSection({
   const selectTomorrow = () => {
     setSelected({ slot: tomorrow.label, day: "manana" });
     setView("form");
-    track(EVENTS.SCHEDULE_SELECT, {
-      content_name: "sesion_manana",
+    trackLead("seleccion_sesion_manana", {
       value: SITE_CONFIG.event.slots[0],
     });
     requestAnimationFrame(() => {
@@ -205,7 +204,7 @@ export function ScheduleSection({
     setSaved(data);
     setView("success");
     setReturningReminder(null);
-    track(EVENTS.INITIATE_CHECKOUT, { content_name: "registro_completado" });
+    trackLead("registro_completado", { value: data.slot });
     requestAnimationFrame(() => {
       successRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     });
@@ -213,8 +212,7 @@ export function ScheduleSection({
 
   const activateWhatsApp = () => {
     if (!saved) return;
-    track(EVENTS.LEAD, {
-      content_name: "activacion_experiencia_whatsapp",
+    trackLead("activacion_experiencia_whatsapp", {
       value: saved.slot,
     });
     window.open(buildWhatsAppLink(saved), "_blank", "noopener,noreferrer");

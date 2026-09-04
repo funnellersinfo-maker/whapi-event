@@ -10,6 +10,7 @@ import { ArrowRight, ShieldAlert, TrendingUp } from "lucide-react";
 import { HeroCta } from "./Hero";
 import { ParticleField } from "./ParticleField";
 import { goToSchedule } from "@/lib/navigation";
+import { trackLead } from "@/lib/tracking";
 
 function scrollToSchedule() {
   goToSchedule();
@@ -67,7 +68,10 @@ function FomoCta() {
   return (
     <button
       type="button"
-      onClick={scrollToSchedule}
+      onClick={() => {
+        trackLead("cta_reservar_fomo");
+        scrollToSchedule();
+      }}
       aria-label="Reservar mi lugar gratis ahora"
       className="group inline-flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-amber-warn px-8 py-4 text-base font-bold uppercase tracking-wide text-[#1a1206] transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] sm:w-auto sm:min-w-[300px]"
     >
@@ -131,6 +135,7 @@ export function FinalSection() {
           <HeroCta
             onClick={scrollToSchedule}
             label="QUIERO VER LA DEMO GRATIS"
+            trackAs="cta_final"
           />
         </motion.div>
       </div>
