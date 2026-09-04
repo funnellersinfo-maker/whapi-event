@@ -72,8 +72,12 @@ export function BlockDeck({ content, footer, labels }: BlockDeckProps) {
     };
     apply();
     mq.addEventListener("change", apply);
+    // Respaldo idempotente (rotación de tablet, emulación de viewport):
+    // reevalúa en cada resize; setState con el mismo valor no re-renderiza.
+    window.addEventListener("resize", apply);
     return () => {
       mq.removeEventListener("change", apply);
+      window.removeEventListener("resize", apply);
       document.documentElement.classList.remove("deck-mode");
       delete document.body.dataset.blockIndex;
     };
