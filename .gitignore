@@ -53,3 +53,7 @@ download/
 worklog.md
 Caddyfile
 db/
+
+# Artefactos de herramientas locales
+tool-results/
+.zscripts/
