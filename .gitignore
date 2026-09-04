@@ -57,3 +57,6 @@ db/
 # Artefactos de herramientas locales
 tool-results/
 .zscripts/
+
+# Archivos subidos por el usuario (se copian a public/img si se usan)
+upload/
